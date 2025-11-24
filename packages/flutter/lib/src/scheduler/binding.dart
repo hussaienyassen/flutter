@@ -22,7 +22,8 @@ import 'dart:ui'
         PlatformDispatcher,
         TimingsCallback;
 
-import 'package:collection/collection.dart' show HeapPriorityQueue, PriorityQueue;
+import 'package:collection/collection.dart'
+    show HeapPriorityQueue, PriorityQueue;
 import 'package:flutter/foundation.dart';
 
 import 'debug.dart';
@@ -97,9 +98,13 @@ class _TaskEntry<T> {
 
   void run() {
     if (!kReleaseMode) {
-      Timeline.timeSync(debugLabel ?? 'Scheduled Task', () {
-        completer.complete(task());
-      }, flow: flow != null ? Flow.step(flow!.id) : null);
+      Timeline.timeSync(
+        debugLabel ?? 'Scheduled Task',
+        () {
+          completer.complete(task());
+        },
+        flow: flow != null ? Flow.step(flow!.id) : null,
+      );
     } else {
       completer.complete(task());
     }
@@ -211,8 +216,16 @@ typedef _PerformanceModeCleanupCallback = VoidCallback;
 /// To create a [PerformanceModeRequestHandle], use [SchedulerBinding.requestPerformanceMode].
 /// The component that makes the request is responsible for disposing the handle.
 class PerformanceModeRequestHandle {
-  PerformanceModeRequestHandle._(_PerformanceModeCleanupCallback this._cleanup) {
-    assert(debugMaybeDispatchCreated('scheduler', 'PerformanceModeRequestHandle', this));
+  PerformanceModeRequestHandle._(
+    _PerformanceModeCleanupCallback this._cleanup,
+  ) {
+    assert(
+      debugMaybeDispatchCreated(
+        'scheduler',
+        'PerformanceModeRequestHandle',
+        this,
+      ),
+    );
   }
 
   _PerformanceModeCleanupCallback? _cleanup;
@@ -338,7 +351,9 @@ mixin SchedulerBinding on BindingBase {
 
   @pragma('vm:notify-debugger-on-exception')
   void _executeTimingsCallbacks(List<FrameTiming> timings) {
-    final List<TimingsCallback> clonedCallbacks = List<TimingsCallback>.of(_timingsCallbacks);
+    final List<TimingsCallback> clonedCallbacks = List<TimingsCallback>.of(
+      _timingsCallbacks,
+    );
     for (final TimingsCallback callback in clonedCallbacks) {
       try {
         if (_timingsCallbacks.contains(callback)) {
@@ -360,7 +375,9 @@ mixin SchedulerBinding on BindingBase {
           FlutterErrorDetails(
             exception: exception,
             stack: stack,
-            context: ErrorDescription('while executing callbacks for FrameTiming'),
+            context: ErrorDescription(
+              'while executing callbacks for FrameTiming',
+            ),
             informationCollector: collector,
           ),
         );
@@ -436,9 +453,8 @@ mixin SchedulerBinding on BindingBase {
     return -e1.priority.compareTo(e2.priority);
   }
 
-  final PriorityQueue<_TaskEntry<dynamic>> _taskQueue = HeapPriorityQueue<_TaskEntry<dynamic>>(
-    _taskSorter,
-  );
+  final PriorityQueue<_TaskEntry<dynamic>> _taskQueue =
+      HeapPriorityQueue<_TaskEntry<dynamic>>(_taskSorter);
 
   /// Schedules the given `task` with the given `priority`.
   ///
@@ -470,7 +486,12 @@ mixin SchedulerBinding on BindingBase {
     Flow? flow,
   }) {
     final bool isFirstTask = _taskQueue.isEmpty;
-    final _TaskEntry<T> entry = _TaskEntry<T>(task, priority.value, debugLabel, flow);
+    final _TaskEntry<T> entry = _TaskEntry<T>(
+      task,
+      priority.value,
+      debugLabel,
+      flow,
+    );
     _taskQueue.add(entry);
     if (isFirstTask && !locked) {
       _ensureEventLoopCallback();
@@ -560,7 +581,8 @@ mixin SchedulerBinding on BindingBase {
   }
 
   int _nextFrameCallbackId = 0; // positive
-  Map<int, _FrameCallbackEntry> _transientCallbacks = <int, _FrameCallbackEntry>{};
+  Map<int, _FrameCallbackEntry> _transientCallbacks =
+      <int, _FrameCallbackEntry>{};
   final Set<int> _removedIds = HashSet<int>();
 
   /// The current number of transient frame callbacks scheduled.
@@ -661,9 +683,8 @@ mixin SchedulerBinding on BindingBase {
         // even if the information collector is called after
         // the problem has been resolved.
         final int count = transientCallbackCount;
-        final Map<int, _FrameCallbackEntry> callbacks = Map<int, _FrameCallbackEntry>.of(
-          _transientCallbacks,
-        );
+        final Map<int, _FrameCallbackEntry> callbacks =
+            Map<int, _FrameCallbackEntry>.of(_transientCallbacks);
         FlutterError.reportError(
           FlutterErrorDetails(
             exception: reason,
@@ -745,7 +766,9 @@ mixin SchedulerBinding on BindingBase {
   static void debugPrintTransientCallbackRegistrationStack() {
     assert(() {
       if (_FrameCallbackEntry.debugCurrentCallbackStack != null) {
-        debugPrint('When the current transient callback was registered, this was the stack:');
+        debugPrint(
+          'When the current transient callback was registered, this was the stack:',
+        );
         debugPrint(
           FlutterError.defaultStackFilter(
             FlutterError.demangleStackTrace(
@@ -817,7 +840,10 @@ mixin SchedulerBinding on BindingBase {
   ///  * [WidgetsBinding.drawFrame], which explains the phases of each frame
   ///    for those apps that use Flutter widgets (and where post frame
   ///    callbacks fit into those phases).
-  void addPostFrameCallback(FrameCallback callback, {String debugLabel = 'callback'}) {
+  void addPostFrameCallback(
+    FrameCallback callback, {
+    String debugLabel = 'callback',
+  }) {
     assert(() {
       if (debugTracePostFrameCallbacks) {
         final FrameCallback originalCallback = callback;
@@ -951,7 +977,9 @@ mixin SchedulerBinding on BindingBase {
     }
     assert(() {
       if (debugPrintScheduleFrameStacks) {
-        debugPrintStack(label: 'scheduleFrame() called. Current phase is $schedulerPhase.');
+        debugPrintStack(
+          label: 'scheduleFrame() called. Current phase is $schedulerPhase.',
+        );
       }
       return true;
     }());
@@ -986,7 +1014,10 @@ mixin SchedulerBinding on BindingBase {
     }
     assert(() {
       if (debugPrintScheduleFrameStacks) {
-        debugPrintStack(label: 'scheduleForcedFrame() called. Current phase is $schedulerPhase.');
+        debugPrintStack(
+          label:
+              'scheduleForcedFrame() called. Current phase is $schedulerPhase.',
+        );
       }
       return true;
     }());
@@ -1239,7 +1270,10 @@ mixin SchedulerBinding on BindingBase {
       if (debugPrintBeginFrameBanner || debugPrintEndFrameBanner) {
         final StringBuffer frameTimeStampDescription = StringBuffer();
         if (rawTimeStamp != null) {
-          _debugDescribeTimeStamp(_currentFrameTimeStamp!, frameTimeStampDescription);
+          _debugDescribeTimeStamp(
+            _currentFrameTimeStamp!,
+            frameTimeStampDescription,
+          );
         } else {
           frameTimeStampDescription.write('(warm-up frame)');
         }
@@ -1286,7 +1320,9 @@ mixin SchedulerBinding on BindingBase {
   ///
   /// Requestor is responsible for calling [PerformanceModeRequestHandle.dispose] when it no longer
   /// requires the performance mode.
-  PerformanceModeRequestHandle? requestPerformanceMode(DartPerformanceMode mode) {
+  PerformanceModeRequestHandle? requestPerformanceMode(
+    DartPerformanceMode mode,
+  ) {
     // conflicting requests are not allowed.
     if (_performanceMode != null && _performanceMode != mode) {
       return null;
@@ -1312,7 +1348,9 @@ mixin SchedulerBinding on BindingBase {
     _numPerformanceModeRequests--;
     if (_numPerformanceModeRequests == 0) {
       _performanceMode = null;
-      PlatformDispatcher.instance.requestDartPerformanceMode(DartPerformanceMode.balanced);
+      PlatformDispatcher.instance.requestDartPerformanceMode(
+        DartPerformanceMode.balanced,
+      );
     }
   }
 
@@ -1343,15 +1381,16 @@ mixin SchedulerBinding on BindingBase {
     try {
       // PERSISTENT FRAME CALLBACKS
       _schedulerPhase = SchedulerPhase.persistentCallbacks;
-      for (final FrameCallback callback in List<FrameCallback>.of(_persistentCallbacks)) {
+      for (final FrameCallback callback in List<FrameCallback>.of(
+        _persistentCallbacks,
+      )) {
         _invokeFrameCallback(callback, _currentFrameTimeStamp!);
       }
 
       // POST-FRAME CALLBACKS
       _schedulerPhase = SchedulerPhase.postFrameCallbacks;
-      final List<FrameCallback> localPostFrameCallbacks = List<FrameCallback>.of(
-        _postFrameCallbacks,
-      );
+      final List<FrameCallback> localPostFrameCallbacks =
+          List<FrameCallback>.of(_postFrameCallbacks);
       _postFrameCallbacks.clear();
       if (!kReleaseMode) {
         FlutterTimeline.startSync('POST_FRAME');
@@ -1395,19 +1434,26 @@ mixin SchedulerBinding on BindingBase {
       buffer.write('${timeStamp.inDays}d ');
     }
     if (timeStamp.inHours > 0) {
-      buffer.write('${timeStamp.inHours - timeStamp.inDays * Duration.hoursPerDay}h ');
+      buffer.write(
+        '${timeStamp.inHours - timeStamp.inDays * Duration.hoursPerDay}h ',
+      );
     }
     if (timeStamp.inMinutes > 0) {
-      buffer.write('${timeStamp.inMinutes - timeStamp.inHours * Duration.minutesPerHour}m ');
+      buffer.write(
+        '${timeStamp.inMinutes - timeStamp.inHours * Duration.minutesPerHour}m ',
+      );
     }
     if (timeStamp.inSeconds > 0) {
-      buffer.write('${timeStamp.inSeconds - timeStamp.inMinutes * Duration.secondsPerMinute}s ');
+      buffer.write(
+        '${timeStamp.inSeconds - timeStamp.inMinutes * Duration.secondsPerMinute}s ',
+      );
     }
     buffer.write(
       '${timeStamp.inMilliseconds - timeStamp.inSeconds * Duration.millisecondsPerSecond}',
     );
     final int microseconds =
-        timeStamp.inMicroseconds - timeStamp.inMilliseconds * Duration.microsecondsPerMillisecond;
+        timeStamp.inMicroseconds -
+        timeStamp.inMilliseconds * Duration.microsecondsPerMillisecond;
     if (microseconds > 0) {
       buffer.write('.${microseconds.toString().padLeft(3, "0")}');
     }
@@ -1466,7 +1512,10 @@ mixin SchedulerBinding on BindingBase {
 /// If there are any frame callbacks registered, only runs tasks with
 /// a [Priority] of [Priority.animation] or higher. Otherwise, runs
 /// all tasks.
-bool defaultSchedulingStrategy({required int priority, required SchedulerBinding scheduler}) {
+bool defaultSchedulingStrategy({
+  required int priority,
+  required SchedulerBinding scheduler,
+}) {
   if (scheduler.transientCallbackCount > 0) {
     return priority >= Priority.animation.value;
   }
