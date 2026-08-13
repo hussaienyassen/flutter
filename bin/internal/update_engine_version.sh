@@ -61,11 +61,11 @@ else
 fi
 
 # Write the engine version out so downstream tools know what to look for.
-echo $ENGINE_VERSION >"$FLUTTER_ROOT/bin/cache/engine.stamp"
+echo $ENGINE_VERSION >"$FLUTTER_ROOT/bin/cache/engine.stamp" 2>/dev/null || true
 
 # The realm on CI is passed in.
 if [ -n "${FLUTTER_REALM}" ]; then
-  echo $FLUTTER_REALM >"$FLUTTER_ROOT/bin/cache/engine.realm"
+  echo $FLUTTER_REALM >"$FLUTTER_ROOT/bin/cache/engine.realm" 2>/dev/null || true
 else
-  echo "" >"$FLUTTER_ROOT/bin/cache/engine.realm"
+  echo "" >"$FLUTTER_ROOT/bin/cache/engine.realm" 2>/dev/null || true
 fi
